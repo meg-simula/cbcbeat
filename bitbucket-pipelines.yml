@@ -9,6 +9,7 @@ pipelines:
           - export FENICS_PREFIX=$HOME/local
           - export FENICS_PYTHON_MAJOR_VERSION=2
           - export FENICS_PYTHON_MINOR_VERSION=7
+          - export PATH=$HOME/bin:$HOME/.local/bin:$PATH
           - source /home/fenics/.profile
           - source /home/fenics/dolfin-adjoint.conf
           - update_libadjoint
