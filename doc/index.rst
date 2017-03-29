@@ -3,21 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to cbcbeat's documentation!
-===================================
+=================================================================================
+cbcbeat: an adjoint-enabled framework for computational cardiac electrophysiology
+=================================================================================
 
 cbcbeat is a Python-based lightweight solver collection for solving
-cardiac electrophysiology problems. cbcbeat efficiently solves single
-cardiac cell models, monodomain and bidomain, both forward and inverse
-problems.
+computational cardiac electrophysiology problems. cbcbeat provides
+solvers for single cardiac cell models, the monodomain and bidomain
+equations and coupled systems of such. All cbcbeat solvers are
+adjoint-enabled thus allowing for efficient solution of both forward
+and inverse cardiac electrophysiology problems.
+
+cbcbeat is based on the finite element functionality provided by the
+FEniCS Project software, the automated derivation and computation of
+adjoints offered by the dolfin-adjoint software and cardiac cell
+models from the CellML repository.
 
 cbcbeat originates from the `Center for Biomedical Computing
 <http://cbc.simula.no>`__, a Norwegian Centre of Excellence, hosted by
 `Simula Research Laboratory <http://www.simula.no>`__, Oslo, Norway.
 
-
 Installation and dependencies:
-------------------------------
+==============================
 
 The cbcbeat source code is hosted on Bitbucket:
 
@@ -28,16 +35,51 @@ cbcbeat is based on
 * The FEniCS Project software (http://www.fenicsproject.org)
 * dolfin-adjoint (http://www.dolfin-adjoint.org)
 
-See the separate file ./INSTALL in the root directory of your cbcbeat
-source for a complete list of dependencies.
+See the separate file INSTALL in the root directory of the cbcbeat
+source for a complete list of dependencies and installation
+instructions.
 
 Main authors:
--------------
+=============
 
-  * Marie E. Rognes    (meg@simula.no)
-  * Johan E. Hake      (hake@simula.no)
-  * Patrick E. Farrell (patrick.farrell@maths.ox.ac.uk)
-  * Simon W. Funke     (simon@simula.no)
+See the separate file AUTHORS in the root directory of the cbcbeat
+source for the list of authors and contributors.
+
+License:
+========
+
+cbcbeat is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+cbcbeat is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this program. If not, see
+<http://www.gnu.org/licenses/>.
+
+Testing and verification:
+=========================
+
+The cbcbeat test suite is based on pytest and available under test/ in
+the root directory of the cbcbeat source.
+
+cbcbeat uses Bitbucket Pipelines for automated and continuous testing:
+
+  https://bitbucket.org/meg/cbcbeat/addon/pipelines/home
+
+Documentation:
+==============
+
+Examples and demos:
+-------------------
+
+A collection of examples on how to use cbcbeat is available under
+demo/ in the root directory of the cbcbeat source.
 
 API documentation:
 ------------------
@@ -45,8 +87,19 @@ API documentation:
 .. toctree::
    :maxdepth: 2
 
-   demo/first-example/demo_first_example
    cbcbeat
+
+Contributions:
+==============
+
+Contributions to cbcbeat are very welcome.
+
+* If you are interested in contributing to the software, please
+  contact <meg@simula.no> directly or via `cbcbeat on Bitbucket
+  <https://bitbucket.org/meg/cbcbeat/pull-requests/>`__.
+
+* Please report `cbcbeat issues on Bitbucket
+  <https://bitbucket.org/meg/cbcbeat/issues>`__.
 
 
 Indices and tables
