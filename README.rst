@@ -7,7 +7,7 @@ electrophysiology models. cbcbeat offers basic and optimized solvers
 for the bidomain and monodomain equations coupled with cardiac cell
 models. cbcbeat is based on the FEniCS Project and dolfin-adjoint.
 
-For more information visit https://bitbucket.org/meg/cbcbeat
+For more information visit http://cbcbeat.readthedocs.org
 
 Installation:
 =============
