@@ -1,6 +1,6 @@
-===========================================================================
-cbcbeat: an adjoint-enabled solver collection for cardiac electrophysiology
-===========================================================================
+=================================================================================
+cbcbeat: an adjoint-enabled framework for computational cardiac electrophysiology
+=================================================================================
 
 cbcbeat is a collection of Python-based solvers for cardiac
 electrophysiology models. cbcbeat offers basic and optimized solvers
