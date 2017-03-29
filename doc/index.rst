@@ -32,8 +32,8 @@ The cbcbeat source code is hosted on Bitbucket:
 
 cbcbeat is based on
 
-* The FEniCS Project software (http://www.fenicsproject.org)
-* dolfin-adjoint (http://www.dolfin-adjoint.org)
+* `FEniCS Project <http://www.fenicsproject.org>`__ 
+* `dolfin-adjoint <http://www.dolfin-adjoint.org>`__
 
 See the separate file INSTALL in the root directory of the cbcbeat
 source for a complete list of dependencies and installation
@@ -65,8 +65,10 @@ License along with this program. If not, see
 Testing and verification:
 =========================
 
-The cbcbeat test suite is based on pytest and available under test/ in
-the root directory of the cbcbeat source.
+The cbcbeat test suite is based on `pytest <pytest.org>`__ and
+available under test/ in the root directory of the cbcbeat source. See
+the INSTALL file in the root directory of the cbcbeat source for how
+to run the tests.
 
 cbcbeat uses Bitbucket Pipelines for automated and continuous testing:
 
