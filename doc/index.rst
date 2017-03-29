@@ -30,10 +30,9 @@ The cbcbeat source code is hosted on Bitbucket:
 
   https://bitbucket.org/meg/cbcbeat
 
-cbcbeat is based on
-
-* `FEniCS Project <http://www.fenicsproject.org>`__ 
-* `dolfin-adjoint <http://www.dolfin-adjoint.org>`__
+The cbcbeat solvers are based on the `FEniCS Project
+<http://www.fenicsproject.org>`__ finite element library and its
+extension `dolfin-adjoint <http://www.dolfin-adjoint.org>`__.
 
 See the separate file INSTALL in the root directory of the cbcbeat
 source for a complete list of dependencies and installation
@@ -59,20 +58,30 @@ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with this program. If not, see
+License along with cbcbeat. If not, see
 <http://www.gnu.org/licenses/>.
 
 Testing and verification:
 =========================
 
-The cbcbeat test suite is based on `pytest <pytest.org>`__ and
-available under test/ in the root directory of the cbcbeat source. See
-the INSTALL file in the root directory of the cbcbeat source for how
-to run the tests.
+The cbcbeat test suite is based on `pytest <http://pytest.org>`__ and
+available in the test/ directory of the cbcbeat source. See the
+INSTALL file in the root directory of the cbcbeat source for how to
+run the tests.
 
-cbcbeat uses Bitbucket Pipelines for automated and continuous testing:
-
+cbcbeat uses Bitbucket Pipelines for automated and continuous testing,
+see the current test status of cbcbeat here:
+ 
   https://bitbucket.org/meg/cbcbeat/addon/pipelines/home
+
+Contributions:
+==============
+
+Contributions to cbcbeat are very welcome. If you are interested in
+improving or extending the software please `contact us
+<https://bitbucket.org/meg/cbcbeat>`__ via the issues or pull requests
+on Bitbucket. Similarly, please `report
+<https://bitbucket.org/meg/cbcbeat/issues>`__ issues via Bitbucket.
 
 Documentation:
 ==============
@@ -80,8 +89,9 @@ Documentation:
 Examples and demos:
 -------------------
 
-A collection of examples on how to use cbcbeat is available under
-demo/ in the root directory of the cbcbeat source.
+A collection of examples on how to use cbcbeat is available in the
+demo/ directory of the cbcbeat source. We also recommend looking at
+the test suite for examples of how to use the cbcbeat solvers.
 
 API documentation:
 ------------------
@@ -90,19 +100,6 @@ API documentation:
    :maxdepth: 2
 
    cbcbeat
-
-Contributions:
-==============
-
-Contributions to cbcbeat are very welcome.
-
-* If you are interested in contributing to the software, please
-  contact <meg@simula.no> directly or via `cbcbeat on Bitbucket
-  <https://bitbucket.org/meg/cbcbeat/pull-requests/>`__.
-
-* Please report `cbcbeat issues on Bitbucket
-  <https://bitbucket.org/meg/cbcbeat/issues>`__.
-
 
 Indices and tables
 ==================
