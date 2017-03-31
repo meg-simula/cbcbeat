@@ -5,8 +5,8 @@ import sys
 from os.path import join as pjoin
 
 # Version number
-major = 0
-minor = 1
+major = 1
+minor = 0
 
 scripts = [pjoin("scripts", "gotran2beat"),
            pjoin("scripts", "gotran2dolfin"),
@@ -28,9 +28,9 @@ if platform.system() == "Windows" or "bdist_wininst" in sys.argv:
 setup(name = "cbcbeat",
       version = "{0}.{1}".format(major, minor),
       description = """
-      An adjointable bi-domain equation solver
+      An adjoint-enabled framework for computational cardiac electrophysiology
       """,
-      author = "Marie Rognes, Johan Hake",
+      author = "M. E. Rognes, J. E. Hake, P. E. Farrell, S. W. Funke",
       author_email = "meg@simula.no",
       packages = ["cbcbeat", "cbcbeat.cellmodels",],
       package_dir = {"cbcbeat": "cbcbeat"},

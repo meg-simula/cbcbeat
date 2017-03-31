@@ -24,7 +24,8 @@ The cbcbeat documention is availble on readthedocs, see:
 
 For manually updating the API and demo documentation, run:
 
-    ./scripts/generate-doc
+    cd doc
+    make html
 
 assuming that cbcbeat and the optional dependency Sphinx
 (sphinx-doc.org) is installed.
