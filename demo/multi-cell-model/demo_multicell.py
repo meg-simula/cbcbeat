@@ -1,10 +1,18 @@
-"""
-This example acts is benchmark tuned for computational efficiency
-for a monodomain + moderately complex (ten Tusscher) cell model
-solver.
-"""
+#!/usr/bin/env python
+#  -*- coding: utf-8 -*-
 
-__author__ = "Marie E Rognes, Johan Hake and Patrick Farrell"
+# .. _first_example
+#
+# How to use the cbcbeat to solve multiple cardiac ODEs in one mesh
+# =================================================================
+#
+# This demo shows how to
+# * Use MultiCellModel to define domains with multiple cell models and
+#   solve using the BasicCardiacODESolver
+#
+# Warning: This functionality is experimental and not yet very practical
+
+__author__ = "Marie E Rognes"
 
 import numpy
 import sys
@@ -39,10 +47,11 @@ c1 = FitzHughNagumoManual()
 markers = CellFunction("uint", mesh, 0)
 markers.array()[0:mesh.num_cells()/2] = 2
 cell_model = MultiCellModel((c0, c1), (2, 0), markers)
-plot(markers, interactive=True, title="Markers")
+plot(markers, title="Markers")
 
 solver = BasicCardiacODESolver(mesh, time, cell_model,
-                               I_s=Expression("100*x[0]*exp(-t)", t=time),
+                               I_s=Expression("100*x[0]*exp(-t)",
+                                              t=time, degree=1),
                                params=None)
 dt = 0.01
 T = 100*dt
