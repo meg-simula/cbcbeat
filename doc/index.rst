@@ -98,7 +98,8 @@ API documentation:
 
 .. toctree::
    :maxdepth: 2
-
+   :numbered:              
+              
    cbcbeat
 
 Indices and tables
