@@ -54,14 +54,14 @@ EXAMPLES_IN = ../demo
 EXAMPLES_OUT = demo
 
 build_examples:
-	mkdir -p $(EXAMPLES_OUT)/first-example
-	bin/pylit.py --overwrite yes $(EXAMPLES_IN)/first-example/demo_first_example.py $(EXAMPLES_OUT)/first-example/demo_first_example.rst
+	# FIXME: Needs updating
+	mkdir -p $(EXAMPLES_OUT)/bidomain-biventricular
+	bin/pylit.py --overwrite yes $(EXAMPLES_IN)/bidomain-biventricular/demo_biventricular.py $(EXAMPLES_OUT)/bidomain-biventricular/demo_biventricular.rst
 
 generate_api_docs:
-	sphinx-apidoc -o . ../cbcbeat/
+	sphinx-apidoc -o . -H cbcbeat -A "M. E. Rognes, J. E. Hake, P. E. Farrell, S. W. Funke" -V 1.0 ../cbcbeat/ 
 
-
-html: generate_api_docs build_examples
+html: generate_api_docs
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
