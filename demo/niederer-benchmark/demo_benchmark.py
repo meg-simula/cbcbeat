@@ -8,9 +8,12 @@
 # * Use cbcbeat to solve the 2011 Niederer benchmark [Phil. Trans. R. Soc.]
 # * Use petsc4py to customize the PETSc linear solvers in detail
 # * Use the FEniCS Parameter system for handling application parameters
-#
+# * Run cbcbeat in parallel (just use mpirun -n N python ....)
+# 
 # Run this demo with e.g.
 # $ mpirun -n 2 python demo_benchmark.py --T 100 --casedir results-100
+#
+# Recommend analyzing the outputs in serial
 
 __author__ = "Johan Hake and Simon W. Funke (simon@simula.no)"
 
@@ -206,10 +209,7 @@ def run_splitting_solver(mesh, application_parameters):
     if store:
         vfile = HDF5File(mesh.mpi_comm(), "%s/v.h5" % casedir, "w")
         vfile.write(v, "/function", t0)
-        mfile = File("%s/mesh.xml.gz" % casedir)
-        mfile << mesh
-        
-    exit()
+        vfile.write(mesh, "/mesh")
         
     # Solve
     timer = Timer("SplittingSolver: solve and store")
@@ -217,7 +217,7 @@ def run_splitting_solver(mesh, application_parameters):
 
     for (i, ((t0, t1), fields)) in enumerate(solutions):
         if ((i%20 == 0) and MPI.rank(mpi_comm_world()) == 0):
-            info("Reached t=%g, dt=%g" % (t0, dt))
+            info("Reached t=%g/%g, dt=%g" % (t0, T, dt))
         if store:
             assigner.assign(v, vs.sub(0))
             vfile.write(v, "/function", t1)
@@ -288,15 +288,18 @@ if __name__ == "__main__":
     application_parameters.parse()
 
     # Solve benchmark problem with given specifications
-    timer = Timer("Total forward time")
-    vs = forward(application_parameters)
-    timer.stop()
+    if True:
+        timer = Timer("Total forward time")
+        vs = forward(application_parameters)
+        timer.stop()
 
-    # List timings
-    list_timings(TimingClear_keep, [TimingType_wall]) 
+        # List timings
+        list_timings(TimingClear_keep, [TimingType_wall]) 
 
-    # Analyze outputs
-    #from analyze_output import compute_activation_times
-    #compute_activation_times(application_parameters["casedir"])
+    # Set this to True to also analyze outputs
+    if False:
+        from analyze_output import compute_activation_times
+        compute_activation_times(application_parameters["casedir"])
     
 
+        

@@ -2,7 +2,6 @@ from dolfin import *
 import numpy
 import matplotlib.pyplot as pyplot
 
-
 def plot_p1p8_line(a, casedir=None):
 
     Lx = 20. # mm
@@ -38,12 +37,13 @@ def compute_activation_times_at_p1p8_line(casedir):
     #                     (10, 3.5, 1.5)]
 
     # Open mesh
-    mesh = Mesh("%s/mesh.xml.gz" % casedir)
-    V = FunctionSpace(mesh, "CG", 1)
-    v = Function(V)
 
     # Open stored v
-    vfile = HDF5File(mesh.mpi_comm(), "%s/v.h5" % casedir, "r")
+    vfile = HDF5File(mpi_comm_world(), "%s/v.h5" % casedir, "r")
+    mesh = Mesh()
+    vfile.read(mesh, "/mesh", False)
+    V = FunctionSpace(mesh, "CG", 1)
+    v = Function(V)
 
     # Set-up data structures for computed activation times
     #times = []
