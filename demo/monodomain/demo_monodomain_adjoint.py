@@ -6,13 +6,21 @@
 # A basic practical example of how to use the cbcbeat module, in
 # particular how to solve the bidomain equations coupled to a
 # moderately complex cell model using the splitting solver provided by
-# cbcbeat.
+# cbcbeat and to compute a sensitivity. 
 #
-# First example for cbcbeat
-# =========================
+# How to compute a sensitivity (functional gradient) using cbcbeat
+# ================================================================
+#
+# This demo shows how to
+# * Use a cardiac cell model from supported cell models
+# * Define a cardiac model based on a mesh and other input
+# * Use and customize the main solver (SplittingSolver)
+# * Compute the sensitivity (gradient) of an objective functional
+
 
 # Import the cbcbeat module
 from cbcbeat import *
+import numpy.random
 
 # Turn on FFC/FEniCS optimizations
 parameters["form_compiler"]["representation"] = "uflacs"
@@ -21,25 +29,24 @@ flags = ["-O3", "-ffast-math", "-march=native"]
 parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
 parameters["form_compiler"]["quadrature_degree"] = 3
 
-# Turn off adjoint functionality
-parameters["adjoint"]["stop_annotating"] = True
-
 # Define the computational domain
 mesh = UnitSquareMesh(100, 100)
 time = Constant(0.0)
 
-# Define the conductivity (tensors)
-M_i = 2.0
-M_e = 1.0
+# Create synthetic conductivity
+Q = FunctionSpace(mesh, "DG", 0)
+M_i = Function(Q)
+M_i.vector()[:] = 0.1*(numpy.random.rand(Q.dim()) + 1.0)
 
 # Pick a cell model (see supported_cell_models for tested ones)
 cell_model = Tentusscher_panfilov_2006_epi_cell()
 
 # Define some external stimulus
-stimulus = Expression("10*t*x[0]", t=time, degree=1)
+stimulus = Expression("(x[0] > 0.9 && t <= 1.0) ? 30.0 : 0.0",
+                      t=time, degree=0)
 
 # Collect this information into the CardiacModel class
-cardiac_model = CardiacModel(mesh, time, M_i, M_e, cell_model, stimulus)
+cardiac_model = CardiacModel(mesh, time, M_i, None, cell_model, stimulus)
 
 # Customize and create a splitting solver
 ps = SplittingSolver.default_parameters()
@@ -54,34 +61,31 @@ solver = SplittingSolver(cardiac_model, params=ps)
 
 # Extract the solution fields and set the initial conditions
 (vs_, vs, vur) = solver.solution_fields()
-vs_.assign(cell_model.initial_conditions())
+vs_.assign(cell_model.initial_conditions(), solver.VS)
 
 # Time stepping parameters
-dt = 0.1
-T = 1.0
+k = 0.01
+T = 0.1
 interval = (0.0, T)
 
-timer = Timer("XXX Forward solve") # Time the total solve
-
-# Solve!
-for (timestep, fields) in solver.solve(interval, dt):
-    print "(t_0, t_1) = (%g, %g)", timestep
-
-    # Extract the components of the field (vs_ at previous timestep,
-    # current vs, current vur)
+# Solve forward problem
+for (timestep, fields) in solver.solve(interval, k):
+    print "(t_0, t_1) = (%g, %g)" % timestep
     (vs_, vs, vur) = fields
 
-    # Print memory usage (just for the fun of it)
-    print memory_usage()
+# Define functional of interest
+j = inner(vs, vs)*dx*dt[FINISH_TIME]
+J = Functional(j)
 
-timer.stop()
+# Indicate the control parameter of interest
+m = Control(M_i)
+
+# Compute the gradient, and project it into the right space
+dJdm = compute_gradient(J, m, project=True)
 
 # Visualize some results
 plot(vs[0], title="Transmembrane potential (v) at end time")
 plot(vs[1], title="1st state variable (s_0) at end time")
+plot(dJdm, title="Sensitivity with respect to M_i")
 
-# List times spent
-list_timings(TimingClear_keep, [TimingType_user])
-
-print "Success!"
 interactive()
