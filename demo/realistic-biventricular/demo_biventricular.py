@@ -1,33 +1,46 @@
-"""
-Demo for propagation of electric potential through left and right
-ventricles.
-"""
+#!/usr/bin/env python
+#  -*- coding: utf-8 -*-
+#
+# How to use the cbcbeat module with non-trivial mesh and conductivities
+# ======================================================================
+#
+# This is a fairly realistic demo illustrating how to use cbcbeat for
+# a non-trivial bidomain simulation involving real meshes of the left
+# and right ventricle, stimulation data based on mesh functions etc.
+#
+# The run time is fairly long, so for demo purposes, just try the
+# following. First, run the script 'preprocess_conductivities.py' to
+# generate conductivities from the other data (press q after):
+#
+# $ python preprocess_conductivities.py
+#
+# Next, run the demo with a low end time to see if things seem to be
+# running.
+#
+# $ python demo_biventricular.py --T 1.0
 
-__author__ = "Marie E. Rognes (meg@simula.no), 2012--2014"
+__author__ = "Marie E. Rognes (meg@simula.no) and Johan E. Hake"
 
-import math
 from cbcbeat import *
+import math
 import time
 
 def setup_application_parameters():
     # Setup application parameters and parse from command-line
     application_parameters = Parameters("Application")
     application_parameters.add("T", 420.0)      # End time  (ms)
-    application_parameters.add("timestep", 1.0) # Time step (ms)
+    application_parameters.add("timestep", 0.1) # Time step (ms)
     application_parameters.add("directory",
-                               "results-%s" % time.strftime("%Y_%d%b_%H:%M"))
+                               "results_%s" % time.strftime("%Y_%d%b_%Hh_%Mm"))
     application_parameters.add("stimulus_amplitude", 30.0)
-    application_parameters.add("healthy", False)
+    application_parameters.add("healthy", True)
     application_parameters.add("cell_model", "FitzHughNagumo")
-    application_parameters.add("basic", False)
     application_parameters.parse()
     info(application_parameters, True)
     return application_parameters
 
 def setup_general_parameters():
     # Adjust some general FEniCS related parameters
-    parameters["reorder_dofs_serial"] = False # Crucial because of
-                                              # stimulus assumption. FIXME.
     parameters["form_compiler"]["cpp_optimize"] = True
     flags = ["-O3", "-ffast-math", "-march=native"]
     parameters["form_compiler"]["cpp_optimize_flags"] = " ".join(flags)
@@ -54,7 +67,7 @@ def setup_conductivities(mesh, application_parameters):
         g_it_field = Function(V, "data/healthy_g_it_field.xml.gz", name="g_it")
         g_in_field = Function(V, "data/healthy_g_in_field.xml.gz", name="g_in")
     else:
-        info_blue("Using unhealthy conductivities")
+        info_blue("Using ischemic conductivities")
         g_el_field = Function(V, "data/g_el_field.xml.gz", name="g_el")
         g_et_field = Function(V, "data/g_et_field.xml.gz", name="g_et")
         g_en_field = Function(V, "data/g_en_field.xml.gz", name="g_en")
@@ -91,11 +104,13 @@ def setup_cell_model(params):
                            "v_rest":Vrest, "v_peak": Vpeak}
         cell_model = FitzHughNagumoManual(cell_parameters)
     elif option == "tenTusscher":
-        cell_model = Tentusscher_2004_mcell()
+        cell_model = Tentusscher_panfilov_2006_M_cell()
+        #cell_model = Tentusscher_2004_mcell()
     else:
         error("Unrecognized cell model option: %s" % option)
 
     return cell_model
+
 
 def setup_cardiac_model(application_parameters):
 
@@ -105,7 +120,6 @@ def setup_cardiac_model(application_parameters):
     mesh.coordinates()[:] /= 1000.0 # Scale mesh from micrometer to millimeter
     mesh.coordinates()[:] /= 10.0   # Scale mesh from millimeter to centimeter
     mesh.coordinates()[:] /= 4.0    # Scale mesh as indicated by Johan/Molly
-    #plot(mesh, title="The computational domain")
 
     # Setup conductivities
     (M_i, M_e, gs) = setup_conductivities(mesh, application_parameters)
@@ -117,47 +131,22 @@ def setup_cardiac_model(application_parameters):
     stimulation_cells = MeshFunction("size_t", mesh,
                                      "data/stimulation_cells.xml.gz")
 
+    V = FunctionSpace(mesh, "DG", 0)
     from stimulation import cpp_stimulus
-    #V = FunctionSpace(mesh, "DG", 0)
-    #pulse = Expression(cpp_stimulus, element=V.ufl_element())
-    pulse = Expression(cpp_stimulus)
+    pulse = Expression(cpp_stimulus, element=V.ufl_element())
     pulse.cell_data = stimulation_cells
     amp = application_parameters["stimulus_amplitude"]
     pulse.amplitude = amp #
     pulse.duration = 10.0 # ms
     pulse.t = time        # ms
-    #pulse = interpolate(pulse, V)
 
     # Initialize cardiac model with the above input
-    heart = CardiacModel(mesh, time, M_i, M_e, cell_model, stimulus={0:pulse})
+    heart = CardiacModel(mesh, time, M_i, M_e, cell_model, stimulus=pulse)
     return (heart, gs)
-
-def store_solution_fields(fields, directory, counter, pvds):
-
-    begin("Storing solutions at timestep %d..." % counter)
-
-    # Extract fields
-    (vs_, vs, vu) = fields
-    vsfile = File("%s/vs_%d.xml.gz" % (directory, counter))
-    vsfile << vs
-    ufile = File("%s/vu_%d.xml.gz" % (directory, counter))
-    ufile << vu
-
-    # Extract subfields
-    u = vu.split()[1]
-    (v, s) = vs.split()
-
-    (v_pvd, u_pvd, s_pvd) = pvds
-
-    # Store pvd of subfields
-    v_pvd << v
-    # s_pvd << s
-    # u_pvd << u
-    end()
 
 def main(store_solutions=True):
 
-    set_log_level(PROGRESS)
+    set_log_level(INFO)
 
     begin("Setting up application parameters")
     application_parameters = setup_application_parameters()
@@ -172,81 +161,63 @@ def main(store_solutions=True):
     T = application_parameters["T"]
     k_n = application_parameters["timestep"]
 
-
-    # -------------------------------------------------------------------------
-    # Basic solve:
-    # -------------------------------------------------------------------------
-
-    I_ion, F = (heart.cell_model().I, heart.cell_model().F)
-    basic_params = BasicCardiacODESolver.default_parameters()
-    basic_params["theta"] = 1.0
-    basic_params["V_polynomial_family"] = "DG"
-    basic_params["V_polynomial_degree"] = 0
-    basic_params["S_polynomial_family"] = "DG"
-    basic_params["S_polynomial_degree"] = 0
-    basic_solver = BasicCardiacODESolver(heart.domain, heart.time,
-                                         1, F, I_ion,
-                                         I_s=heart.stimulus,
-                                         params=basic_params)
-
-    # Extract solution fields from solver
-    (vs_, vs) = basic_solver.solution_fields()
-    vs_.assign(heart.cell_model().initial_conditions(), basic_solver.VS)
-
-    # Set-up solve
-    solutions = basic_solver.solve((0, T), k_n)
-    timestep_counter = 1
-    for (timestep, fields) in solutions:
-        timestep_counter += 1
-        (v, s) = vs.split(deepcopy=True)
-        plot(v, title="v basic")
-        plot(s, title="s basic")
-        plot(heart.stimulus[0], title="stimulus", mesh=heart.domain)
-
-        print "vs_max = ", vs.vector().max()
-        break
-
-    #-------------------------------------------------------------------------
-    # PIS based solve:
-    #-------------------------------------------------------------------------
-
-    adj_reset()
-
-    begin("Setting up cardiac model for PIS solver")
-    (heart, gs) = setup_cardiac_model(application_parameters)
-    I_ion, F = (heart.cell_model().I, heart.cell_model().F)
+    # Since we know the time-step we want to use here, set it for the
+    # sake of efficiency in the bidomain solver
+    begin("Setting up splitting solver")
+    params = SplittingSolver.default_parameters()
+    params["theta"] = 1.0
+    params["CardiacODESolver"]["scheme"] = "GRL1"
+    #params["BidomainSolver"]["linear_solver_type"] = "direct"
+    #params["BidomainSolver"]["default_timestep"] = k_n
+    solver = SplittingSolver(heart, params=params)
     end()
 
-    pis_params = CardiacODESolver.default_parameters()
-    pis_params["scheme"] = "BackwardEuler"
-    #pis_params["point_integral_solver"]["newton_solver"]["always_recompute_jacobian"] = True
-    #pis_params["point_integral_solver"]["newton_solver"]["recompute_jacobian_for_linear_problems"] = True
-    #pis_params["point_integral_solver"]["newton_solver"]["recompute_jacobian_each_solve"] = True
-    #pis_params["point_integral_solver"]["newton_solver"]["max_relative_previous_residual"] = 0.01
-    #pis_params["point_integral_solver"]["newton_solver"]["maximum_iterations"] = 10
-    pis_params["point_integral_solver"]["newton_solver"]["report"] = True
-    pis_solver = CardiacODESolver(heart.domain, heart.time,
-                                  1, F, I_ion,
-                                  I_s=heart.stimulus,
-                                  params=pis_params)
-
     # Extract solution fields from solver
-    (vs_, vs) = pis_solver.solution_fields()
-    vs_.assign(heart.cell_model().initial_conditions(), pis_solver.VS)
+    (vs_, vs, vu) = solver.solution_fields()
+
+    # Extract and assign initial condition
+    vs_.assign(heart.cell_models().initial_conditions(), solver.VS)
+
+    # Store parameters
+    directory = application_parameters["directory"]
+    application_params_file = File("%s/application_parameters.xml" % directory)
+    application_params_file << application_parameters
+    solver_params_file = File("%s/solver_parameters.xml" % directory)
+    solver_params_file << solver.parameters
+    params_file = File("%s/parameters.xml" % directory)
+    params_file << parameters
 
     # Set-up solve
-    solutions = pis_solver.solve((0, T), k_n)
-    timestep_counter = 1
-    for (timestep, fields) in solutions:
-        timestep_counter += 1
-        (v, s) = vs.split(deepcopy=True)
-        plot(v, title="v pis")
-        plot(s, title="s pis")
-        plot(heart.stimulus[0], title="pis stimulus", mesh=heart.domain)
+    solutions = solver.solve((0, T), k_n)
 
-        print "vs_max pis = ", vs.vector().max()
-        interactive()
-        return
+    # Set up storage
+    mpi_comm = heart.domain().mpi_comm()
+    vs_timeseries = TimeSeries(mpi_comm, "%s/vs" % directory)
+    u_timeseries = TimeSeries(mpi_comm, "%s/u" % directory)
+
+    # Store initial solutions:
+    if store_solutions:
+        vs_timeseries.store(vs_.vector(), 0.0)
+        u = vu.split(deepcopy=True)[1]
+        u_timeseries.store(u.vector(), 0.0)
+
+    # (Compute) and store solutions
+    timer = Timer("Forward solve")
+    theta = params["theta"]
+    for (timestep, fields) in solutions:
+        # Store hdf5
+        if store_solutions:
+            (t0, t1) = timestep
+            vs_timeseries.store(vs.vector(), t1)
+            u = vu.split(deepcopy=True)[1]
+            u_timeseries.store(u.vector(), t0 + theta*(t1 - t0))
+    plot(vs[0], title="v")
+
+    timer.stop()
+
+    # List timings
+    list_timings(TimingClear_keep, [TimingType_wall,])
+    return (gs, solver)
 
 if __name__ == "__main__":
     main()
