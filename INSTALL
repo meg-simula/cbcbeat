@@ -1,11 +1,3 @@
-Installation with docker
-------------------------
-1. Install docker: https://docs.docker.com/engine/installation/
-2. Build docker container with
-       `docker build -t cbcbeat .`
-3. Start docker container with
-       `docker run -i -t cbcbeat`
-
 Installation:
 -------------
 
@@ -34,29 +26,26 @@ The installation can be verified by running the collection of tests
 located under test/:
 
   cd test
-  py.test
-
+  py.test -m "not slow" -v
 
 Dependencies:
 -------------
 
 cbcbeat depends in particular on the following software components
 
-* The FEniCS Project software: www.fenicsproject.org
+* The FEniCS Project software: www.fenicsproject.org (v. 2016.1.0 or later)
 
   The FEniCS Project is a collection of software for automated
   solution of partial differential equations using finite element
-  methods.
+  methods. 
 
-  Version: 2016.1.0
-
-* dolfin-adjoint: www.dolfin-adjoint.org
+* dolfin-adjoint: www.dolfin-adjoint.org (compatible with FEniCS)
 
   dolfin-adjoint provides tools for automatically deriving the
   discrete adjoint and tangent linear models from a DOLFIN forward
   model.
 
-* gotran: https://bitbucket.org/johanhake/gotran
+* [Optional] gotran: https://bitbucket.org/johanhake/gotran 
 
   Gotran is a general ODE translator
 
@@ -77,3 +66,12 @@ cbcbeat depends in particular on the following software components
 * [Optional] py.test (pytest.org)
 
   This testing tools is used for, well: the tests
+
+Installation with docker
+------------------------
+1. Install docker: https://docs.docker.com/engine/installation/
+2. Build docker container with
+       `docker build -t cbcbeat .`
+3. Start docker container with
+       `docker run -i -t cbcbeat`
+
