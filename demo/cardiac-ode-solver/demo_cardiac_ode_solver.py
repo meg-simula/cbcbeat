@@ -1,7 +1,13 @@
 """
+This demo shows how to:
+- Solve a cardiac cell model over a domain (for each vertex in that domain)
+- How to set heterogeneous (spatially varying) cell model parameters
+- How to set FEniCS parameters for improved computational efficiency  
+- How to replay the forward solve using via dolfin-adjoint
+- How to output the recorded forward solve
 """
 
-__author__ = "Marie E. Rognes (meg@simula.no), 2013"
+__author__ = "Marie E. Rognes (meg@simula.no)"
 
 from cbcbeat import *
 
@@ -19,13 +25,15 @@ def forward():
     N = 10
     mesh = UnitSquareMesh(N, N)
     time = Constant(0.0)
-
+  
     # Choose your favorite cell model
     model = Tentusscher_2004_mcell()
+
+    # You can set spatially varying cell model parameters e.g. as:
     model.set_parameters(K_mNa=Expression("40*sin(pi*x[0])", degree=4))
 
-    # Add some forces
-    stimulus = Expression("100*t", t=time, degree=1)
+    # Add some stimulus
+    stimulus = Expression("100*t", t=time, degree=0)
 
     Solver = CardiacODESolver
     params = Solver.default_parameters()
