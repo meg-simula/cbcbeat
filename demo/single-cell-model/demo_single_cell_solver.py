@@ -1,14 +1,21 @@
-"""Illustrate changing cell model parameters following the Arevalo et
-al, Nature Communications, 2016 set-up
-"""
+#!/usr/bin/env python
+#  -*- coding: utf-8 -*-
+#
+# How to use the cbcbeat module to just look at one cardiac cell model
+# ====================================================================
+#
+# This demo shows how to
+# * Use the SingleCellSolver
+# * Adjust cardiac cell model parameters (here following the Arevalo
+#   et al, Nature Communications, 2016 set-up
 
 __author__ = "Marie E. Rognes (meg@simula.no), 2017"
 
 import math
 import pylab
 from cbcbeat import *
-from demo import plot_results
 
+# Disable adjointing
 parameters["adjoint"]["stop_annotating"] = True
 
 # For easier visualization of the variables
@@ -30,6 +37,25 @@ class Stimulus(Expression):
             value[0] = 0.05*v_amp
         else:
             value[0] = 0.0
+
+def plot_results(times, values, show=True):
+    "Plot the evolution of each variable versus time."
+
+    variables = zip(*values)
+    pylab.figure(figsize=(20, 10))
+
+    rows = int(math.ceil(math.sqrt(len(variables))))
+    for (i, var) in enumerate([variables[0],]):
+        #pylab.subplot(rows, rows, i+1)
+        pylab.plot(times, var, '*-')
+        pylab.title("Var. %d" % i)
+        pylab.xlabel("t")
+        pylab.grid(True)
+
+    info_green("Saving plot to 'variables.pdf'")
+    pylab.savefig("variables.pdf")
+    if show:
+        pylab.show()
 
 def main(scenario="default"):
     "Solve a single cell model on some time frame."
@@ -95,5 +121,6 @@ if __name__ == "__main__":
 
     (times, values1) = main("default")
     (times, values2) = main("gray zone")
-    compare_results(times, [values1, values2], legends=("default", "gray zone"),
+    compare_results(times, [values1, values2],
+                    legends=("default", "gray zone"),
                     show=True)
