@@ -11,10 +11,9 @@ sensitivities, continue by looking at
 
   monodomain/demo_monodomain_adjoint.py
 
-If you would like to tune the performance of the solvers, in
-particular to customize the linear algebra solvers, look at
+If you would like to look at a more realistic example, take a look at 
 
-  solver-efficiency/*
+  bidomain-biventricular/demo_*.py
 
 Conventions for adding new demos
 ================================
